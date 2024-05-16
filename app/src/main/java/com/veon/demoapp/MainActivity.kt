@@ -10,16 +10,25 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.admanager.AdManagerAdRequest
+import com.google.android.gms.ads.admanager.AdManagerAdView
 import com.veon.demoapp.databinding.ActivityMainBinding
 import org.prebid.mobile.AdSize
+import org.prebid.mobile.BannerAdUnit
+import org.prebid.mobile.BannerParameters
 import org.prebid.mobile.Host
 import org.prebid.mobile.PrebidMobile
+import org.prebid.mobile.Signals
+import org.prebid.mobile.addendum.AdViewUtils
+import org.prebid.mobile.addendum.PbFindSizeError
 import org.prebid.mobile.api.data.InitializationStatus
 import org.prebid.mobile.api.exceptions.AdException
 import org.prebid.mobile.api.rendering.BannerView
 import org.prebid.mobile.api.rendering.listeners.BannerViewListener
-import org.prebid.mobile.eventhandlers.AuctionBannerEventHandler
-import org.prebid.mobile.eventhandlers.AuctionListener
+//import org.prebid.mobile.eventhandlers.AuctionBannerEventHandler
+//import org.prebid.mobile.eventhandlers.AuctionListener
 
 
 class MainActivity : AppCompatActivity() {
@@ -39,8 +48,8 @@ class MainActivity : AppCompatActivity() {
         adButton!!.setOnClickListener {
             if (SdkOK) {
                 Log.d(SdkTAG, "load ad")
-                showAds320x50()
-                showAds300x250()
+//                showAds320x50()
+                OldVersionWithGamAds300x250()
             } else {
                 Log.d(SdkTAG, "sdk not loaded")
             }
@@ -50,111 +59,208 @@ class MainActivity : AppCompatActivity() {
     }
 
     // load placement mybl_android_universal_banner_320x50
-    private fun showAds320x50() {
-        // listener for wrapping GAM rendering
-        val eventHandler = AuctionBannerEventHandler(
-            this,
-            "/",
-            0.1F,
-            AdSize(320, 50)
+//    private fun showAds320x50() {
+//        // listener for wrapping GAM rendering
+//        val eventHandler = AuctionBannerEventHandler(
+//            this,
+//            "/",
+//            0.1F,
+//            AdSize(320, 50)
+//        )
+//
+//        // lister for understand where from demand
+//        eventHandler.setAuctionEventListener(object : AuctionListener {
+//            override fun onPRBWin(price: Float) {
+//                Toast.makeText(applicationContext, "onPRBWin", Toast.LENGTH_LONG).show()
+//            }
+//            override fun onGAMWin(view: View?) {
+//                Toast.makeText(applicationContext, "onGAMWin", Toast.LENGTH_LONG).show()
+//            }
+//        })
+//
+//        // configure banner placement
+//        val adUnit = BannerView(this, "mybl_android_universal_banner_320x50", eventHandler)
+//
+//        // lister for custom tracking or custom display creative
+//        adUnit.setBannerListener(object : BannerViewListener {
+//            override fun onAdUrlClicked(url: String?) {
+//                Toast.makeText(applicationContext, url, Toast.LENGTH_LONG).show()
+//            }
+//            override fun onAdLoaded(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdLoaded", Toast.LENGTH_LONG).show()
+//            }
+//            override fun onAdDisplayed(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdDisplayed", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdFailed(bannerView: BannerView?, exception: AdException?) {
+//                Toast.makeText(applicationContext, "onAdFailed", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdClicked(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdClicked", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdClosed(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdClosed", Toast.LENGTH_LONG).show()
+//            }
+//        })
+//
+//        val AdSlot = binding.banner32050
+//        AdSlot.addView(adUnit)
+//        adUnit.loadAd()
+//    }
+
+    private fun OldVersionWithGamAds300x250() {
+
+        val AdSlot = binding.banner300250
+
+        val adUnit = BannerAdUnit(
+            "mybl_android_universal_banner_300x250",
+            300,
+            250,
         )
+        adUnit.setAutoRefreshInterval(30)
 
-        // lister for understand where from demand
-        eventHandler.setAuctionEventListener(object : AuctionListener {
-            override fun onPRBWin(price: Float) {
-                Toast.makeText(applicationContext, "onPRBWin", Toast.LENGTH_LONG).show()
-            }
-            override fun onGAMWin(view: View?) {
-                Toast.makeText(applicationContext, "onGAMWin", Toast.LENGTH_LONG).show()
-            }
-        })
+        val parameters = BannerParameters()
+        parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
+        adUnit.bannerParameters = parameters
 
-        // configure banner placement
-        val adUnit = BannerView(this, "mybl_android_universal_banner_320x50", eventHandler)
-
-        // lister for custom tracking or custom display creative
-        adUnit.setBannerListener(object : BannerViewListener {
-            override fun onAdUrlClicked(url: String?) {
-                Toast.makeText(applicationContext, url, Toast.LENGTH_LONG).show()
-            }
-            override fun onAdLoaded(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdLoaded", Toast.LENGTH_LONG).show()
-            }
-            override fun onAdDisplayed(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdDisplayed", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onAdFailed(bannerView: BannerView?, exception: AdException?) {
-                Toast.makeText(applicationContext, "onAdFailed", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onAdClicked(bannerView: BannerView?) {
+        // GAM LOADER
+        val adView = AdManagerAdView(this)
+        adView.adUnitId = "/23081467975,23120258467/mybl_bangladesh/mybl_android_slot2_content_home_300x250"
+        adView.setAdSizes(com.google.android.gms.ads.AdSize(300, 250))
+        adView.adListener = object: AdListener() {
+            override fun onAdClicked() {
+                super.onAdClicked()
                 Toast.makeText(applicationContext, "onAdClicked", Toast.LENGTH_LONG).show()
             }
-
-            override fun onAdClosed(bannerView: BannerView?) {
+            override fun onAdClosed() {
+                super.onAdClosed()
                 Toast.makeText(applicationContext, "onAdClosed", Toast.LENGTH_LONG).show()
             }
-        })
+            override fun onAdFailedToLoad(adError : LoadAdError) {
+                super.onAdFailedToLoad(adError)
+                Toast.makeText(applicationContext, "onAdFailedToLoad", Toast.LENGTH_LONG).show()
+            }
+            override fun onAdImpression() {
+                super.onAdImpression()
+                Toast.makeText(applicationContext, "onAdImpression", Toast.LENGTH_LONG).show()
+            }
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                AdViewUtils.findPrebidCreativeSize(adView, object : AdViewUtils.PbFindSizeListener {
+                    override fun success(width: Int, height: Int) {
+                        adView.setAdSizes(
+                            com.google.android.gms.ads.AdSize(
+                                width,
+                                height
+                            )
+                        )
+                    }
+                    override fun failure(error: PbFindSizeError) {}
+                })
+                Toast.makeText(applicationContext, "onAdLoaded", Toast.LENGTH_LONG).show()
+            }
+            override fun onAdOpened() {
+                super.onAdOpened()
+                Toast.makeText(applicationContext, "onAdOpened", Toast.LENGTH_LONG).show()
+            }
+        }
 
-        val AdSlot = binding.banner32050
-        AdSlot.addView(adUnit)
-        adUnit.loadAd()
+        AdSlot.addView(adView)
+
+        // PREBID LOADER
+        val request = AdManagerAdRequest.Builder().build()
+        adUnit.fetchDemand(request) {
+            adView.loadAd(request)
+        }
+//
+//        val AdSlot = binding.banner300250
+//        val adUnit = BannerAdUnit("mybl_android_universal_banner_300x250", 300, 250)
+//        val parameters = BannerParameters()
+//        parameters.api = listOf(Signals.Api.MRAID_3, Signals.Api.OMID_1)
+//        adUnit.bannerParameters = parameters
+//
+//
+//
+//        val adView = AdManagerAdView(this)
+//        adView.adUnitId = "/"
+//        adView.setAdSizes(com.google.android.gms.ads.AdSize(300, 250))
+//        adView.adListener = object : AdListener() {
+//            override fun onAdLoaded() {
+//                super.onAdLoaded()
+//                AdViewUtils.findPrebidCreativeSize(adView, object : AdViewUtils.PbFindSizeListener {
+//                    override fun success(width: Int, height: Int) {
+//                        adView.setAdSizes(com.google.android.gms.ads.AdSize(width, height))
+//                    }
+//                    override fun failure(error: PbFindSizeError) {
+//                    }
+//                })
+//            }
+//        }
+//        AdSlot.addView(adView)
+//
+//        val request = AdManagerAdRequest.Builder().build()
+//        adUnit.fetchDemand(request) {
+//            adView.loadAd(request)
+//        }
+
     }
 
     // load placement mybl_android_universal_banner_300x250
-    private fun showAds300x250() {
-
-        // listener for wrapping GAM rendering
-        val eventHandler = AuctionBannerEventHandler(
-            this,
-            "/",
-            0.1F,
-            AdSize(300, 250)
-        )
-
-        // lister for understand where from demand
-        eventHandler.setAuctionEventListener(object : AuctionListener {
-            override fun onPRBWin(price: Float) {
-                Toast.makeText(applicationContext, "onPRBWin", Toast.LENGTH_LONG).show()
-            }
-            override fun onGAMWin(view: View?) {
-                Toast.makeText(applicationContext, "onGAMWin", Toast.LENGTH_LONG).show()
-            }
-        })
-
-        // configure banner placement
-        val adUnit = BannerView(this, "mybl_android_universal_banner_300x250", eventHandler)
-
-        // lister for custom tracking or custom display creative
-        adUnit.setBannerListener(object : BannerViewListener {
-            override fun onAdUrlClicked(url: String?) {
-                Toast.makeText(applicationContext, url, Toast.LENGTH_LONG).show()
-            }
-            override fun onAdLoaded(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdLoaded", Toast.LENGTH_LONG).show()
-            }
-            override fun onAdDisplayed(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdDisplayed", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onAdFailed(bannerView: BannerView?, exception: AdException?) {
-                Toast.makeText(applicationContext, "onAdFailed", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onAdClicked(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdClicked", Toast.LENGTH_LONG).show()
-            }
-
-            override fun onAdClosed(bannerView: BannerView?) {
-                Toast.makeText(applicationContext, "onAdClosed", Toast.LENGTH_LONG).show()
-            }
-        })
-
-        val AdSlot = binding.banner300250
-        AdSlot.addView(adUnit)
-        adUnit.loadAd()
-    }
+//    private fun showAds300x250() {
+//
+//        // listener for wrapping GAM rendering
+//        val eventHandler = AuctionBannerEventHandler(
+//            this,
+//            "/",
+//            0.1F,
+//            AdSize(300, 250)
+//        )
+//
+//        // lister for understand where from demand
+//        eventHandler.setAuctionEventListener(object : AuctionListener {
+//            override fun onPRBWin(price: Float) {
+//                Toast.makeText(applicationContext, "onPRBWin", Toast.LENGTH_LONG).show()
+//            }
+//            override fun onGAMWin(view: View?) {
+//                Toast.makeText(applicationContext, "onGAMWin", Toast.LENGTH_LONG).show()
+//            }
+//        })
+//
+//        // configure banner placement
+//        val adUnit = BannerView(this, "mybl_android_universal_banner_300x250", eventHandler)
+//
+//        // lister for custom tracking or custom display creative
+//        adUnit.setBannerListener(object : BannerViewListener {
+//            override fun onAdUrlClicked(url: String?) {
+//                Toast.makeText(applicationContext, url, Toast.LENGTH_LONG).show()
+//            }
+//            override fun onAdLoaded(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdLoaded", Toast.LENGTH_LONG).show()
+//            }
+//            override fun onAdDisplayed(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdDisplayed", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdFailed(bannerView: BannerView?, exception: AdException?) {
+//                Toast.makeText(applicationContext, "onAdFailed", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdClicked(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdClicked", Toast.LENGTH_LONG).show()
+//            }
+//
+//            override fun onAdClosed(bannerView: BannerView?) {
+//                Toast.makeText(applicationContext, "onAdClosed", Toast.LENGTH_LONG).show()
+//            }
+//        })
+//
+//        val AdSlot = binding.banner300250
+//        AdSlot.addView(adUnit)
+//        adUnit.loadAd()
+//    }
 
     // Initialization VEON SDK
     private fun initSDK() {
