@@ -1,5 +1,6 @@
 package com.veon.demoapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -45,7 +46,9 @@ class MainActivity : AppCompatActivity() {
                 Log.d(SdkTAG, "sdk not loaded")
             }
         }
-
+        findViewById<Button>(R.id.recyclerbutton).setOnClickListener {
+            startActivity(Intent(this, RecyclerActivity::class.java))
+        }
         initSDK()
     }
 
